@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
 <h1>My cool to-do app</h1>
@@ -19,11 +20,48 @@
     {% endfor %}
 </ul>
 
-<form method="post" action="{% url 'create_task' %}">
+<form  id="taskForm" method="post"">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Create Task</button>
 </form>
 
+
+<script>
+// Only execute script once document is fully loaded
+$(document).ready(function() {
+    // Add an event handler to the Task Form
+    $("#taskForm").submit(function(e) {
+        // Prevents the browser from taking the "default" action when a form is submitted
+        // (sending an HTTP request and loading the response)
+        e.preventDefault();
+        // $.ajax means we are sending an HTTP request and handling the response entirely
+        // using JavaScript, which does not require a page reload
+        $.ajax({
+            // DATA WE ARE SENDING
+            // Request method is POST
+            type: 'POST',
+            // Endpoint is 127.0.0.1:8000/create_task
+            url: '{% url "create_task" %}',
+            // The form is "this". So this.serialize() means we are converting the HTML form to JSON
+            data: $(this).serialize(),
+            // WHAT HAPPENS AFTER WE RECEIVE A RESPONSE
+            // This code runs if there is a 200X response
+            success: function(response) {
+                $('ul').append('<li>' + response.task_description + '</li>');
+                $("#taskForm")[0].reset();  // Clear the form fields
+            },
+            // This code runs if there is a 4XX or 5XX response
+            error: function(response) {
+                alert('Error: ' + response.responseJSON.errors);
+            }
+            // If there is a 3XX response, jQuery might automatically follow the redirect and try the request again
+            // 1XX responses are preliminary and usually don't trigger any action (they're handled by the browser)
+        });
+    });
+});
+</script>
+
 </body>
+
 </html>
