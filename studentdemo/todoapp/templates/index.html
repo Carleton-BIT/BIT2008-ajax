@@ -20,7 +20,7 @@
     {% endfor %}
 </ul>
 
-<form  id="taskForm" method="post"">
+<form  id="taskForm" method="post" action="{% url 'create_task' %}">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Create Task</button>
